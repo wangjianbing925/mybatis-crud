@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:util="http://www.springframework.org/schema/util" 
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="com.palm" />
+	<!-- 启动SpringMVC的注解功能，它会自动注册HandlerMapping、 HandlerAdapter、ExceptionResolver的相关实例 -->
+	<mvc:annotation-driven /> 
+
+	<mvc:interceptors>
+	    <mvc:interceptor>
+	    	<mvc:mapping path="/bg/**"/>
+			<mvc:exclude-mapping path="/bg/login/**" />
+	        <bean class="com.{{companyName}}.interceptor.BgBaseInterceptor" />
+	    </mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/**"/>
+			<mvc:exclude-mapping path="/cwreq/**"/>
+			<mvc:exclude-mapping path="/bg/**"/>
+			<mvc:exclude-mapping path="/pay/**"/>
+			<mvc:exclude-mapping path="/app/register/**"/>
+			<mvc:exclude-mapping path="/app/province/**"/>
+			<mvc:exclude-mapping path="/app/examtype/list"/>
+			<bean class="com.palm.interceptor.FrBaseInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+	<!-- 通用视图解析类 -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/jsp/" />
+		<property name="suffix" value=".jsp" />
+		<property name="viewClass"
+			value="org.springframework.web.servlet.view.JstlView" />
+	</bean>
+
+	<!-- 总错误处理 -->
+	<bean id="exceptionResolver"
+		class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="defaultErrorView">
+			<value>/error</value>
+		</property>
+		<property name="defaultStatusCode">
+			<value>500</value>
+		</property>
+		<property name="warnLogCategory">
+			<value>org.springframework.web.servlet.handler.SimpleMappingExceptionResolver
+			</value>
+		</property>
+	</bean>
+
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		  <property name="defaultEncoding" value="utf-8" />
+	      <property name="maxUploadSize" value="10485760000" />
+	      <property name="maxInMemorySize" value="40960" />
+	</bean>
+	
+	<!-- spring代理后，对controller、service的aop要在这边配置才生效 -->
+	<aop:config>
+	
+		<aop:pointcut id="serviceMethod"
+			expression="execution(* com.{{companyName}}.service.*.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="serviceMethod" />
+		
+		<!-- aop实现的日志 -->
+		<!--<aop:aspect id="optLogAspect" ref="logAdvice">
+			<aop:pointcut expression="execution(* com.ai.web.controller.*.*(..))"
+				id="logBeforeCut" />
+			<aop:before method="logBefore" pointcut-ref="logBeforeCut" />
+		</aop:aspect>-->
+		
+	</aop:config>
+	
+</beans>
