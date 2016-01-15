@@ -54,18 +54,15 @@ public class {{data.className}}Controller extends BaseController {
         return rm;
     }
 
-    @RequestMapping(value = "/add", produces = "application/json")
+    @RequestMapping(value = "/save", produces = "application/json")
     @ResponseBody
     public ResultModel add({{data.className}} object) throws Exception {
-
-        return {{data.variableName}}Service.add(object);
-    }
-
-    @RequestMapping(value = "/update", produces = "application/json")
-    @ResponseBody
-    public ResultModel update({{data.className}} object) throws Exception {
-
-        return {{data.variableName}}Service.update(object);
+       {% for column in data.columns %}{% if column.isPri %}
+       if(object.get{{column.variableName}}() == null){ {% endif%}{% endfor %}
+          return {{data.variableName}}Service.add(object);
+       }else{
+          return {{data.variableName}}Service.update(object);
+       }
     }
 
     @RequestMapping(value = "/delete", produces = "application/json")
